@@ -138,5 +138,4 @@ In this code:
 Don't forget to replace `'your-secret-key'` with your Stripe secret key.
 
 This server listens on port 5000 for incoming requests. Your client-side app would send requests to `http://localhost:5000/payment` to start the payment process.
-
 Please note that this is a very simple example, and real-world applications require more complex error handling, user authentication, and potentially other business logic. It's also important to secure your application appropriately, as you'll be handling sensitive user information. Make sure you follow best practices for security.
