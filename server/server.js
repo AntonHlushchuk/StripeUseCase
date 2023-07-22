@@ -9,7 +9,6 @@ const app = express();
 app.use(
     helmet({
         hidePoweredBy: { setTo: 'NodeJS' }, // Customize the X-Powered-By header (optional)
-        contentSecurityPolicy: false, // Customize the Content-Security-Policy header (optional)
     })
 );
 app.use(bodyParser.urlencoded({ extended: false }));
