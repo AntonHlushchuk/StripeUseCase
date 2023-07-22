@@ -1,5 +1,7 @@
 import './App.css';
 import React from 'react';
+import CheckoutForm from './CheckoutForm';
+import CardElement from "./CardElement";
 import {Elements} from '@stripe/react-stripe-js';
 import {loadStripe} from '@stripe/stripe-js';
 
@@ -16,6 +18,7 @@ export default function App() {
 
   return (
       <Elements stripe={stripePromise}>
+          <CardElement />
         {/*<CheckoutForm />*/}
       </Elements>
   );

@@ -2,36 +2,36 @@ const express = require('express');
 const stripe = require('stripe')('sk_test_51NWaDzLMk7mdm7YPxSXwQkuoD4JtfO5IzxnwD8xGn4a94afKjV6UszROohOUcsusuA4KN3Vy2W0xjERFCPnziEv400yIpA51tI');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const helmet = require('helmet');
 
 const app = express();
 
+app.use(
+    helmet({
+        hidePoweredBy: { setTo: 'NodeJS' }, // Customize the X-Powered-By header (optional)
+        contentSecurityPolicy: false, // Customize the Content-Security-Policy header (optional)
+    })
+);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', // Replace with your frontend domain
+    methods: 'GET, POST, PUT, DELETE', // Specify allowed methods
+    allowedHeaders: 'Content-Type', // Specify allowed headers
+}));
 
-app.post('/payment', async (req, res) => {
-    try {
-        let {amount, id} = req.body;
-        const payment = await stripe.paymentIntents.create({
-            amount,
-            currency: 'USD',
-            description: 'Your Company Description',
-            payment_method: id,
-            confirm: true
-        });
+app.post('/create-payment-intent', async (req, res) => {
+    const { amount } = req.body;
 
-        console.log("Payment", payment);
-        res.json({
-            message: 'Payment successful',
-            success: true
-        });
-    } catch (error) {
-        console.log("Error", error);
-        res.json({
-            message: 'Payment failed',
-            success: false
-        });
-    }
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount,
+        currency: "usd"
+    });
+
+    res.send({
+        clientSecret: paymentIntent.client_secret
+    });
 });
 
 const PORT = process.env.PORT || 5001;
