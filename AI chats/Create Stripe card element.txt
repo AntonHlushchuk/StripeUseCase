@@ -132,3 +132,220 @@ These styles are then passed to `CardElement` as a part of the options prop.
 The options you can use to style your element may have changed or increased, so you should check the most up-to-date Stripe documentation to ensure you're using the correct style properties.
 
 Remember that the appearance you want to add to your CardElement depends on your specific design needs and can vary greatly from this example.
+
+Question:
+Rewrite above CardElement using HOC as a function instead of a class
+
+Answer:
+Sure, in modern React, we prefer functional components and hooks over class components. We can write a Higher-Order Component (HOC) as a function as well. Here's how to implement `withStripeErrorHandling` as a functional component:
+
+```jsx
+import React, { useEffect, useState } from 'react';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+// 1. Create a basic CardElement component
+function CardComponent() {
+    const stripe = useStripe();
+    const elements = useElements();
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        if (!stripe || !elements) {
+            // Stripe.js has not loaded yet. Make sure to disable form submission until Stripe.js has loaded.
+            return;
+        }
+
+        const card = elements.getElement(CardElement);
+
+        const {error, paymentMethod} = await stripe.createPaymentMethod({
+            type: 'card',
+            card: card,
+        });
+
+        if (error) {
+            console.log('[error]', error);
+        } else {
+            console.log('[PaymentMethod]', paymentMethod);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <CardElement />
+            <button type="submit" disabled={!stripe}>Pay</button>
+        </form>
+    );
+}
+
+// 2. Create a HOC to handle Stripe API errors
+const withStripeErrorHandling = (WrappedComponent) => (props) => {
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const errorHandler = (err) => {
+            if(err.type === 'StripeError') {
+                setError(err);
+                console.log('Caught a Stripe error: ', err.message);
+            }
+        }
+        window.addEventListener('error', errorHandler);
+
+        return () => {
+            window.removeEventListener('error', errorHandler);
+        }
+    }, []);
+
+    if (error) {
+        // ...handle the error or render an error message...
+    }
+
+    return <WrappedComponent {...props} />;
+};
+
+// 3. Wrap our CardComponent in the HOC
+const CardComponentWithErrorHandling = withStripeErrorHandling(CardComponent);
+
+export default CardComponentWithErrorHandling;
+```
+
+In this version, `withStripeErrorHandling` is a function that takes a component as an argument and returns another function (the HOC itself). This HOC uses a React hook `useState` to store any error that occurs, and `useEffect` to attach an error handler to the window object when the component mounts. When the component unmounts, the error handler is removed.
+
+Note that this approach assumes that Stripe errors will trigger the window's error event. This may not always be the case, especially for async errors, and this approach also won't catch any errors that occur synchronously before the error handler is set up.
+
+Error boundaries (which is used in the class-based example) are a feature of React that allow you to catch errors that occur during rendering, in lifecycle methods, and in constructors of the whole tree below them. But as of my knowledge cut-off in September 2021, React had not yet provided an equivalent hook for functional components.
+
+So, while you can use event listeners to catch some types of errors in functional components, you might not be able to catch all the same errors that an error boundary would. Depending on your needs, you may still want to use a class component for your error boundary, or to structure your code so that any components that might throw errors are descendants of a class-based error boundary.
+
+Question:
+Implement necessary logic in order to correctly tie CardElement with the next backend server:
+app.post('/webhook', express.raw({type: 'application/json'}), (request, response) => {
+    let event = request.body;
+    if (endpointSecret) {
+        // Get the signature sent by Stripe
+        const signature = request.headers['stripe-signature'];
+        try {
+            event = stripe.webhooks.constructEvent(
+                request.body,
+                signature,
+                endpointSecret
+            );
+        } catch (err) {
+            console.log(`⚠️  Webhook signature verification failed.`, err.message);
+            return response.sendStatus(400);
+        }
+    }
+
+    // Handle the event
+    switch (event.type) {
+        case 'payment_intent.succeeded':
+            const paymentIntent = event.data.object;
+            console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
+            // Then define and call a method to handle the successful payment intent.
+            // handlePaymentIntentSucceeded(paymentIntent);
+            break;
+        case 'payment_method.attached':
+            const paymentMethod = event.data.object;
+            // Then define and call a method to handle the successful attachment of a PaymentMethod.
+            // handlePaymentMethodAttached(paymentMethod);
+            break;
+        default:
+            // Unexpected event type
+            console.log(`Unhandled event type ${event.type}.`);
+    }
+
+    response.send();
+});
+
+app.listen(4242, () => console.log('Running on port 4242'));
+
+Answer:
+The provided code is a server-side implementation in Node.js using Express. It sets up a route `/webhook` to handle webhooks sent from Stripe. Webhooks are used by Stripe to notify your application when an event happens in your account, such as a charge being successful or a recurring payment being created.
+
+However, tying `CardElement` to this backend service from the client-side involves making a request to create a Payment Intent or Setup Intent, handling the response in your client-side code, and then completing the payment on the server side.
+
+Here's a simplified example of how you might set this up, combining it with the `CardComponent` from previous code snippets.
+
+```jsx
+// Client side with React
+
+import React, { useEffect, useState } from 'react';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import axios from 'axios'; // for making the HTTP request
+
+// 1. Create a basic CardElement component
+function CardComponent() {
+    const stripe = useStripe();
+    const elements = useElements();
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        if (!stripe || !elements) {
+            return;
+        }
+
+        const card = elements.getElement(CardElement);
+
+        // Step 1: Start the payment process by contacting our server
+        const { data: clientSecret } = await axios.post('/start-payment');
+
+        // Step 2: Confirm the payment with Stripe
+        const {error, paymentIntent} = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: { card }
+        });
+
+        if (error) {
+            console.log('[error]', error);
+        } else {
+            console.log('[PaymentIntent]', paymentIntent);
+            // Step 3: The payment has been processed! We could redirect the user to a new page here
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <CardElement />
+            <button type="submit" disabled={!stripe}>Pay</button>
+        </form>
+    );
+}
+
+export default CardComponent;
+```
+
+And the server side:
+
+```js
+// Server side with Express and Stripe
+
+const express = require('express');
+const stripe = require('stripe')('sk_test_...'); // your secret key here
+const app = express();
+
+// This is the endpoint called by the client to start a payment
+app.post('/start-payment', async (req, res) => {
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: 1000, // amount in cents
+    currency: 'usd'
+  });
+
+  res.json(paymentIntent.client_secret);
+});
+
+// This is the webhook endpoint
+app.post('/webhook', express.raw({type: 'application/json'}), (request, response) => {
+  // ...the rest of your webhook handling code here
+});
+
+app.listen(4242, () => console.log('Running on port 4242'));
+```
+
+Please note, the amount and currency in `/start-payment` endpoint should not be hardcoded in a real application. They should come from your application's state depending on what the user is buying.
+
+Also, the server side should have an endpoint to handle the webhook events coming from Stripe. Your application's logic should deal with these events accordingly, for example, updating the payment status in your database.
+
+Lastly, the endpointSecret and the secret key for Stripe should be stored as environment variables and not hardcoded into your application. It's also essential to handle exceptions and errors properly in a production application.
+
+Please check the [Stripe API Documentation](https://stripe.com/docs/api) and [Stripe Webhooks Guide](https://stripe.com/docs/webhooks) for more details and complete examples.
+
