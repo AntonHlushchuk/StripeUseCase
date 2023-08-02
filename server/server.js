@@ -6,10 +6,21 @@ const cors = require('cors');
 
 const app = express();
 
-app.use(cors({
+app.use(
+    cors({
     methods: 'GET, POST, PUT, DELETE',
     allowedHeaders: 'Content-Type, Authorization'
-}));
+    }),
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "example.com"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:'],
+            fontSrc: ["'self'"],
+        },
+    })
+);
 
 app.post('/start-payment', async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.create({
