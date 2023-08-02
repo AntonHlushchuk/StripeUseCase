@@ -1,9 +1,6 @@
-const stripe = require('stripe')('sk_test_51NWaDzLMk7mdm7YPxSXwQkuoD4JtfO5IzxnwD8xGn4a94afKjV6UszROohOUcsusuA4KN3Vy2W0xjERFCPnziEv400yIpA51tI');
-// Replace this endpoint secret with your endpoint's unique secret
-// If you are testing with the CLI, find the secret by running 'stripe listen'
-// If you are using an endpoint defined with the API or dashboard, look in your webhook settings
-// at https://dashboard.stripe.com/webhooks
-const endpointSecret = 'whsec_0b2be36f22517c4b15a4f88d4392785fc2a3c262d437d3a100193e78de3b777b';
+require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 const express = require('express');
 const cors = require('cors');
 
@@ -15,10 +12,9 @@ app.use(cors({
     allowedHeaders: 'Content-Type, Authorization'
 }));
 
-// This is the endpoint called by the client to start a payment
 app.post('/start-payment', async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.create({
-        amount: 1000, // amount in cents
+        amount: 1000,
         currency: 'usd'
     });
 
