@@ -1,70 +1,57 @@
-# Getting Started with Create React App
+Sure, here is an updated `README.md` file:
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+---
 
-## Available Scripts
+# Stripe Payment Integration in React
 
-In the project directory, you can run:
+## Application Description
 
-### `npm start`
+This application demonstrates how to use the Stripe API with a React application to make payments. It features a single page where a user can enter their card details and submit the payment. Under the hood, it uses Stripe's `react-stripe-js` library to create a `CardElement` (a pre-built UI component for collecting card details) and the Stripe API to create a payment intent.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Our application is designed to handle errors gracefully. It wraps the `CardElement` in a higher-order component (HOC) that listens for global errors and handles Stripe errors specifically. The error handling logic uses the `stripe.error` event type and logs any Stripe error to the console. If there's an error during payment submission, the error message is shown on the page.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## How to Run the Application Locally
 
-### `npm test`
+1. Clone the repository:
+    ```
+    git clone <repository-url>
+    ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Navigate into the cloned repository:
+    ```
+    cd <repository-folder>
+    ```
 
-### `npm run build`
+3. Install dependencies:
+    ```
+    npm install
+    ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. Run the application:
+    ```
+    npm start
+    ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The application will start on `http://localhost:3000` by default (you can change this in the script inside `package.json`).
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Example URLs
 
-### `npm run eject`
+Here are example URLs to test the application:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. Starting the payment process:
+    ```
+    http://localhost:3000/start-payment
+    ```
+   This URL initiates the payment process. On the frontend, it's hit when the "Pay" button is pressed, and it starts the payment process on the backend. The backend returns a `clientSecret`, which is used by the Stripe API on the frontend to confirm the payment.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2. Webhook for Stripe events:
+    ```
+    http://localhost:4242/webhook
+    ```
+   This is the webhook endpoint which Stripe will hit to send events related to the payment process. This URL will not return anything meaningful when opened in a browser because it is intended to receive POST requests from the Stripe API.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Please note that you will need to set up a local server on port 4242 and establish a Stripe webhook endpoint at `/webhook` to handle the Stripe events for the second example URL.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Please replace `<repository-url>` and `<repository-folder>` with the actual repository URL and folder name.
