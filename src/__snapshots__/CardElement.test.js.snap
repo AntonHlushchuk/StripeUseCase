@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CardComponent renders correctly 1`] = `
+<form
+  onSubmit={[Function]}
+  style={
+    Object {
+      "alignItems": "center",
+      "border": "1px solid #ccc",
+      "display": "flex",
+      "flexDirection": "column",
+      "height": "100vh",
+      "justifyContent": "center",
+      "padding": "20px",
+      "width": "100%",
+    }
+  }
+>
+  <div
+    style={
+      Object {
+        "height": "50px",
+        "marginBottom": "20px",
+        "width": "300px",
+      }
+    }
+  >
+    <div
+      data-testid="CardElement"
+    >
+      CardElement
+    </div>
+  </div>
+  <button
+    disabled={true}
+    type="submit"
+  >
+    Pay
+  </button>
+</form>
+`;

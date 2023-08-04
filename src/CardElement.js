@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import axios from 'axios';
 
 const CARD_ELEMENT_OPTIONS = {
     style: {
@@ -20,7 +19,7 @@ const CARD_ELEMENT_OPTIONS = {
     }
 };
 
-function CardComponent() {
+export function CardComponent() {
     const stripe = useStripe();
     const elements = useElements();
 
@@ -33,16 +32,30 @@ function CardComponent() {
 
         const card = elements.getElement(CardElement);
 
-        const { data: clientSecret } = await axios.post('http://localhost:4242/start-payment');
-
-        const {error, paymentIntent} = await stripe.confirmCardPayment(clientSecret, {
-            payment_method: { card }
+        const response = await fetch('http://localhost:4242/start-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
         });
 
-        if (error) {
-            console.log('[error]', error);
-        } else {
-            console.log('[PaymentIntent]', paymentIntent);
+        if (!response.ok) {
+            console.log('[error]', response.statusText);
+            return;
+        }
+
+        const { clientSecret } = await response.json();
+
+        if (clientSecret) {
+            const {error, paymentIntent} = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: { card }
+            });
+
+            if (error) {
+                console.log('[error]', error);
+            } else {
+                console.log('[PaymentIntent]', paymentIntent);
+            }
         }
     };
 

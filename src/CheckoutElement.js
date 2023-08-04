@@ -23,7 +23,7 @@ const options = {
     }
 };
 
-const ExpressCheckoutElement = ({ handleSubmit }) => {
+export const ExpressCheckoutElement = ({ handleSubmit }) => {
     return (
         <form onSubmit={handleSubmit}>
             <IbanElement options={options} />
@@ -44,7 +44,7 @@ const CheckoutElement = ({children, handleSubmit}) => (
 );
 
 
-const withStripeErrorHandling = (WrappedComponent) => {
+export const withStripeErrorHandling = (WrappedComponent) => {
     return function WithStripeErrorHandlingComponent(props) {
         const stripe = useStripe();
         const elements = useElements();
