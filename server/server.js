@@ -3,6 +3,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 
 const app = express();
 
@@ -67,6 +68,16 @@ app.post('/webhook', express.raw({type: 'application/json'}), (request, response
     }
 
     response.send();
+});
+
+app.post('/create-payment-intent', async (req, res) => {
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount: 1000,
+        currency: 'eur',
+        payment_method_types: ['sepa_debit'],
+    });
+
+    res.json({client_secret: paymentIntent.client_secret});
 });
 
 app.listen(4242, () => console.log('Running on port 4242'));

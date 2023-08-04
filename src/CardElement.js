@@ -2,6 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axios from 'axios';
 
+const CARD_ELEMENT_OPTIONS = {
+    style: {
+        base: {
+            color: "#32325d",
+            fontFamily: 'Arial, sans-serif',
+            fontSmoothing: "antialiased",
+            fontSize: "16px",
+            "::placeholder": {
+                color: "#32325d"
+            }
+        },
+        invalid: {
+            color: "#fa755a",
+            iconColor: "#fa755a"
+        }
+    }
+};
+
 function CardComponent() {
     const stripe = useStripe();
     const elements = useElements();
@@ -28,9 +46,28 @@ function CardComponent() {
         }
     };
 
+    const formStyle = {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        width: '100%',
+        border: '1px solid #ccc',
+        padding: '20px',
+    };
+
+    const cardElementContainerStyle = {
+        height: '50px',
+        width: '300px',
+        marginBottom: '20px',
+    };
+
     return (
-        <form onSubmit={handleSubmit}>
-            <CardElement />
+        <form onSubmit={handleSubmit} style={formStyle}>
+            <div style={cardElementContainerStyle}>
+                <CardElement options={CARD_ELEMENT_OPTIONS} />
+            </div>
             <button type="submit" disabled={!stripe}>Pay</button>
         </form>
     );
